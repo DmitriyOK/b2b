@@ -4,6 +4,8 @@ import org.springframework.beans.factory.InitializingBean;
 import ru.protal.b2b.controller.dto.response.UserInfo;
 import ru.protal.b2b.service.messaging.messages.in.VerifyInMessage;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public interface OrderManager extends InitializingBean {
 
     void putTask(UserInfo userInfo);
@@ -11,4 +13,6 @@ public interface OrderManager extends InitializingBean {
     void reloadOrder(Long orderId);
 
     void handleMessage(VerifyInMessage inMessage);
+
+    boolean isAlive();
 }

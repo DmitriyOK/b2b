@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Runtime.getRuntime;
 import static ru.protal.b2b.repository.dao.UserDao.from;
@@ -38,6 +39,8 @@ import static ru.protal.b2b.service.persistance.UserStatus.ACTIVATION;
 
 @Service
 public class EmbeddedRegistrationManager implements OrderManager {
+
+    private AtomicBoolean isAlive = new AtomicBoolean(true);
 
     private UserRepository userRepository;
     private OrderRepository orderRepository;
@@ -79,12 +82,16 @@ public class EmbeddedRegistrationManager implements OrderManager {
 
     @Override// как вариант использовать apache akka и под каждый Step использовать актор для производительности
     public void handleMessage(VerifyInMessage inMessage) {
-        UserDao userDao = userRepository.findById(inMessage.getUserId()).get();
-        UserInfo userInfo = from(userDao);
-        callbackProcessStep(inMessage, userInfo);
-        sendEmailNotify(inMessage, userInfo);
-        finishOrderStep(userInfo.getId());
-        currentOrders.remove(userInfo.getId());
+        try {
+            UserDao userDao = userRepository.findById(inMessage.getUserId()).get();
+            UserInfo userInfo = from(userDao);
+            callbackProcessStep(inMessage, userInfo);
+            sendEmailNotify(inMessage, userInfo);
+            finishOrderStep(userInfo.getId());
+            currentOrders.remove(userInfo.getId());
+        }catch (Exception e){
+
+        }
     }
 
     public void putTask(UserInfo userInfo) {
@@ -172,5 +179,9 @@ public class EmbeddedRegistrationManager implements OrderManager {
 
         order.getTransitions().add(finalTransition);
         orderRepository.save(order);
+    }
+
+    public boolean isAlive() {
+        return isAlive.get();
     }
 }

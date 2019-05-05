@@ -15,6 +15,7 @@ import ru.protal.b2b.repository.dao.UserStatusDao;
 import ru.protal.b2b.controller.dto.request.UserRegistrationInfo;
 import ru.protal.b2b.controller.dto.response.UserInfo;
 import ru.protal.b2b.repository.UserRepository;
+import ru.protal.b2b.service.orders.registrationuser.OrderManager;
 import ru.protal.b2b.service.persistance.UserService;
 import ru.protal.b2b.service.validation.UserDataValidator;
 
@@ -37,6 +38,9 @@ public class UserServiceTest {
 
     @MockBean
     UserDataValidator validator;
+
+    @MockBean
+    OrderManager orderManager;
 
     @Captor
     private ArgumentCaptor<UserDao> userDaoArg;
@@ -129,4 +133,39 @@ public class UserServiceTest {
     }
 
 
+    @Test
+    public void putTaskSkipWhenOrderManagerIsNotAlive(){
+        //given
+        mocksForAliveCheck(false);
+        //then
+        verify(orderManager,never()).putTask(any(UserInfo.class));
+    }
+
+    @Test
+    public void putTaskSkipWhenOrderManagerIsAlive(){
+        //given
+        mocksForAliveCheck(true);
+        //then
+        verify(orderManager, times(1)).putTask(any(UserInfo.class));
+    }
+
+    void mocksForAliveCheck(boolean isAlive){
+        //given
+        UserDao daoOutUser = UserDao.builder()
+                .userId(1L)
+                .login("ivan234").password("dasdas#$%^12312das").email("d@d.com")
+                .firstName("ivan").middleName("ivanovich").lastName("ivanov")
+                .status(UserStatusDao.builder()
+                        .status(NEW.toString()).statusId(1L).build())
+                .build();
+
+        UserRegistrationInfo userRegInfo = UserRegistrationInfo.builder()
+                .login("ivan234").email("d@d.com").password("help_me_plz:)").build();
+        //and
+        when(userRepository.findByLogin(anyString())).thenReturn(null);
+        when(userRepository.save(any(UserDao.class))).thenReturn(daoOutUser);
+        doNothing().when(validator).validateUserData(any(UserRegistrationInfo.class));
+        when(orderManager.isAlive()).thenReturn(isAlive);
+        userService.saveOne(userRegInfo);
+    }
 }

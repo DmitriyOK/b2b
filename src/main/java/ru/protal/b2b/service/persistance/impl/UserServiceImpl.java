@@ -8,6 +8,8 @@ import ru.protal.b2b.controller.dto.request.UserRegistrationInfo;
 import ru.protal.b2b.controller.dto.response.UserInfo;
 import ru.protal.b2b.repository.UserRepository;
 import ru.protal.b2b.repository.dao.UserStatusDao;
+import ru.protal.b2b.service.orders.registrationuser.EmbeddedRegistrationManager;
+import ru.protal.b2b.service.orders.registrationuser.OrderManager;
 import ru.protal.b2b.service.persistance.UserService;
 import ru.protal.b2b.service.validation.UserDataValidator;
 
@@ -20,12 +22,15 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
     private UserDataValidator validator;
+    private OrderManager orderManager;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserDataValidator validator) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                           UserDataValidator validator, OrderManager orderManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.validator = validator;
+        this.orderManager = orderManager;
     }
 
     @Override
@@ -47,7 +52,11 @@ public class UserServiceImpl implements UserService {
                 .status(UserStatusDao.builder().statusId(NEW.getId()).build())
                 .build();
 
-        return from(userRepository.save(userDao));
+        UserInfo userInfo = from(userRepository.save(userDao));
+        if (orderManager.isAlive()){
+                orderManager.putTask(userInfo);
+        }
+        return userInfo;
     }
 
 
