@@ -8,7 +8,6 @@ import ru.protal.b2b.controller.dto.request.UserRegistrationInfo;
 import ru.protal.b2b.controller.dto.response.UserInfo;
 import ru.protal.b2b.repository.UserRepository;
 import ru.protal.b2b.repository.dao.UserStatusDao;
-import ru.protal.b2b.service.orders.registrationuser.EmbeddedRegistrationManager;
 import ru.protal.b2b.service.orders.registrationuser.OrderManager;
 import ru.protal.b2b.service.persistance.UserService;
 import ru.protal.b2b.service.validation.UserDataValidator;
@@ -54,7 +53,7 @@ public class UserServiceImpl implements UserService {
 
         UserInfo userInfo = from(userRepository.save(userDao));
         if (orderManager.isAlive()){
-                orderManager.putTask(userInfo);
+                orderManager.putNewTask(userInfo);
         }
         return userInfo;
     }

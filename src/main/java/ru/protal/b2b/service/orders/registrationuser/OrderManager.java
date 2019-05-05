@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface OrderManager extends InitializingBean {
 
-    void putTask(UserInfo userInfo);
+    void putNewTask(UserInfo userInfo);
 
     void reloadOrder(Long orderId);
 

@@ -138,7 +138,7 @@ public class UserServiceTest {
         //given
         mocksForAliveCheck(false);
         //then
-        verify(orderManager,never()).putTask(any(UserInfo.class));
+        verify(orderManager,never()).putNewTask(any(UserInfo.class));
     }
 
     @Test
@@ -146,7 +146,7 @@ public class UserServiceTest {
         //given
         mocksForAliveCheck(true);
         //then
-        verify(orderManager, times(1)).putTask(any(UserInfo.class));
+        verify(orderManager, times(1)).putNewTask(any(UserInfo.class));
     }
 
     void mocksForAliveCheck(boolean isAlive){
