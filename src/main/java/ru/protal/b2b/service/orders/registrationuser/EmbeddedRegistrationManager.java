@@ -145,7 +145,7 @@ public class EmbeddedRegistrationManager implements OrderManager {
             transition.setResultId(ERROR.getId());
         }
         OrderTransitionDao newTransition = OrderTransitionDao.builder()
-                .orderId(order.getOrderId())
+                .order(order)
                 .fromStateId(VERIFY.getId())
                 .toStateId(EMAIL_NOTIFY.getId())
                 .resultId(OrderStateResult.START.getId())
@@ -162,7 +162,7 @@ public class EmbeddedRegistrationManager implements OrderManager {
         OrderTransitionDao lastTransition = order.getTransitions().get(0);
         lastTransition.setResultId(SUCCESS.getId());
         OrderTransitionDao finalTransition = OrderTransitionDao.builder()
-                .orderId(order.getOrderId())
+                .order(order)
                 .fromStateId(EMAIL_NOTIFY.getId())
                 .toStateId(DONE.getId())
                 .resultId(SUCCESS.getId())

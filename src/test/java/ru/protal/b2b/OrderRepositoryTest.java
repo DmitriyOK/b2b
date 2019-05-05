@@ -11,13 +11,12 @@ import ru.protal.b2b.repository.dao.OrderDao;
 import ru.protal.b2b.repository.dao.OrderTransitionDao;
 import ru.protal.b2b.service.orders.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static ru.protal.b2b.service.orders.OrderAction.REGISTRATION;
 import static ru.protal.b2b.service.orders.OrderEntity.USER;
+import static ru.protal.b2b.service.orders.OrderState.EMAIL_NOTIFY;
 import static ru.protal.b2b.service.orders.OrderState.START;
 import static ru.protal.b2b.service.orders.OrderState.VERIFY;
 import static ru.protal.b2b.service.orders.OrderStatus.DONE;
@@ -51,14 +50,14 @@ public class OrderRepositoryTest {
                 .transitions(Arrays.asList(orderTransition))
                 .build();
 
-        orderTransition.setOrderId(order.getOrderId());
+        orderTransition.setOrder(order);
 
         entityManager.persist(order);
         entityManager.flush();
 
         OrderDao orderDao = orderRepository.findAll().get(0);
         assertThat(orderDao.getTransitions().get(0).getResultId() == 2L);
-        assertThat(orderDao.getTransitions().get(0).getOrderId()).isPositive();
+        assertThat(orderDao.getTransitions().get(0).getOrder().getOrderId()).isPositive();
     }
 
 
@@ -79,25 +78,27 @@ public class OrderRepositoryTest {
                 .transitions(Arrays.asList(transition))
                 .build();
 
+        transition.setOrder(newOrder);
+
         newOrder = entityManager.persist(newOrder);
         entityManager.flush();
 
-        newOrder.getTransitions().get(0).setResultId(OrderStateResult.SUCCESS.getId());
-        List transitions  = new ArrayList<>(newOrder.getTransitions());
+        OrderTransitionDao oldTransit = newOrder.getTransitions().get(0);
+        oldTransit.setResultId(OrderStateResult.SUCCESS.getId());
+
         OrderTransitionDao newTransit = OrderTransitionDao.builder()
-                .orderId(newOrder.getOrderId())
                 .fromStateId(VERIFY.getId())
-                .toStateId(OrderState.EMAIL_NOTIFY.getId())
+                .toStateId(EMAIL_NOTIFY.getId())
                 .resultId(OrderStateResult.START.getId())
                 .build();
-
-        transitions.add(newTransit);
-        newOrder.setTransitions(transitions);
+        newTransit.setOrder(newOrder);
+        newOrder.setTransitions(Arrays.asList(oldTransit, newTransit));
 
         entityManager.persist(newOrder);
         entityManager.flush();
+        Collections.sort(newOrder.getTransitions());
 
-        assertThat(newOrder.getTransitions().size() ==  2);
-        assertThat(newOrder.getTransitions().get(0)).isEqualTo(newTransit);
+        assertThat(newOrder.getTransitions().size()).isEqualTo(2);
+        assertThat(newOrder.getTransitions().get(0).getToStateId()).isEqualTo(EMAIL_NOTIFY.getId());
     }
 }

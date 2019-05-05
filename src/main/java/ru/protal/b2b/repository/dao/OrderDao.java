@@ -1,14 +1,12 @@
 package ru.protal.b2b.repository.dao;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -35,8 +33,7 @@ public class OrderDao {
     Long statusId;
 
     @OrderBy("transition_id DESC")
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "transition_id", referencedColumnName = "order_id")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "order")
     List<OrderTransitionDao> transitions;
 
 }
