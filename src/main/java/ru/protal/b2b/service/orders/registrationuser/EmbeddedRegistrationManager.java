@@ -73,13 +73,15 @@ public class EmbeddedRegistrationManager implements OrderManager {
         orders.forEach(ord -> currentOrders.put(ord.getOrderId(), ord));
         //create orders for NEW users
         futureOrders = new ConcurrentLinkedQueue<>();
-        List<UserDao> allByQuery = userRepository.findAllBy();
+        List<UserDao> allByQuery = userRepository.findAllWhereOrderIsNull();
         allByQuery.forEach(user -> putTask(from(user)));
     }
 
-    @Override
-    public void handleMessage(VerifyInMessage inMessage, UserInfo userInfo) { // как вариант использовать apache akka и под каждый
-        callbackProcessStep(inMessage, userInfo);                           // Step использовать актор для производительности
+    @Override// как вариант использовать apache akka и под каждый Step использовать актор для производительности
+    public void handleMessage(VerifyInMessage inMessage) {
+        UserDao userDao = userRepository.findById(inMessage.getUserId()).get();
+        UserInfo userInfo = from(userDao);
+        callbackProcessStep(inMessage, userInfo);
         sendEmailNotify(inMessage, userInfo);
         finishOrderStep(userInfo.getId());
         currentOrders.remove(userInfo.getId());

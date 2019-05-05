@@ -10,5 +10,5 @@ public interface OrderManager extends InitializingBean {
 
     void reloadOrder(Long orderId);
 
-    void handleMessage(VerifyInMessage inMessage, UserInfo userInfo);
+    void handleMessage(VerifyInMessage inMessage);
 }

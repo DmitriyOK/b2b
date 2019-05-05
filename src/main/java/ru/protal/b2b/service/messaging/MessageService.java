@@ -6,4 +6,5 @@ public interface MessageService {
 
     void send(ServiceOutMessage serviceMessage) throws Exception;
 
+    void listen(String message) throws Exception;
 }

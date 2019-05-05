@@ -98,7 +98,7 @@ public class UserRepositoryTest {
         userRepository.save(userWithOrder);
         orderRepository.save(order);
         //when
-        List<UserDao> allByQuery = userRepository.findAllBy();
+        List<UserDao> allByQuery = userRepository.findAllWhereOrderIsNull();
         //then
         assertThat(allByQuery.size() == 1).isTrue();
         assertThat(allByQuery.get(0).getLogin()).isEqualTo("pet234");
