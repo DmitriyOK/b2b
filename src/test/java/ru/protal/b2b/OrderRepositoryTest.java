@@ -9,6 +9,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.protal.b2b.repository.OrderRepository;
 import ru.protal.b2b.repository.dao.OrderDao;
 import ru.protal.b2b.repository.dao.OrderTransitionDao;
+import ru.protal.b2b.repository.dao.UserDao;
+import ru.protal.b2b.repository.dao.UserStatusDao;
 import ru.protal.b2b.service.orders.*;
 
 import java.util.*;
@@ -44,12 +46,20 @@ public class OrderRepositoryTest {
 
         OrderDao order = OrderDao.builder()
                 .actionId(REGISTRATION.getId())
-                .userId(12L)
                 .entityId(USER.getId())
                 .statusId(DONE.getId())
                 .transitions(Arrays.asList(orderTransition))
                 .build();
 
+        UserDao user = UserDao.builder()
+                .firstName("petya").middleName("ivanovich").lastName("petrov")
+                .email("pet@das.com").login("pet234").password("assd")
+                .status(UserStatusDao.builder()
+                        .status("NEW").build())
+                .build();
+
+        user.setOrder(order);
+        order.setUser(user);
         orderTransition.setOrder(order);
 
         entityManager.persist(order);
@@ -64,6 +74,13 @@ public class OrderRepositoryTest {
     @Test
     public void testSortTransition(){
 
+        UserDao user = UserDao.builder()
+                .firstName("petya").middleName("ivanovich").lastName("petrov")
+                .email("pet@das.com").login("pet234").password("assd")
+                .status(UserStatusDao.builder()
+                        .status("NEW").build())
+                .build();
+
         OrderTransitionDao transition = OrderTransitionDao.builder()
                 .fromStateId(START.getId())
                 .toStateId(VERIFY.getId())
@@ -74,10 +91,11 @@ public class OrderRepositoryTest {
                 .actionId(REGISTRATION.getId())
                 .entityId(USER.getId())
                 .statusId(NEW.getId())
-                .userId(123L)
                 .transitions(Arrays.asList(transition))
                 .build();
 
+        user.setOrder(newOrder);
+        newOrder.setUser(user);
         transition.setOrder(newOrder);
 
         newOrder = entityManager.persist(newOrder);

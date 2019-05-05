@@ -5,8 +5,8 @@ import lombok.*;
 import javax.persistence.*;
 import java.util.List;
 
-@Getter
-@Setter
+@ToString(exclude = "user")
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,9 +20,6 @@ public class OrderDao {
     @Column(name = "order_id", unique = true)
     Long orderId;
 
-    @Column(name = "user_id", nullable = false, length = 35)
-    Long userId;
-
     @Column(name = "action_id", nullable = false, length = 35)
     Long actionId;
 
@@ -35,5 +32,9 @@ public class OrderDao {
     @OrderBy("transition_id DESC")
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "order")
     List<OrderTransitionDao> transitions;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", nullable = false, referencedColumnName = "user_id")
+    UserDao user;
 
 }

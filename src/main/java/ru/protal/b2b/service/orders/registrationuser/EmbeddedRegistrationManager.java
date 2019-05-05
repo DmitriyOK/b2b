@@ -73,7 +73,7 @@ public class EmbeddedRegistrationManager implements OrderManager {
         orders.forEach(ord -> currentOrders.put(ord.getOrderId(), ord));
         //create orders for NEW users
         futureOrders = new ConcurrentLinkedQueue<>();
-        List<UserDao> allByQuery = userRepository.findAllByQuery();
+        List<UserDao> allByQuery = userRepository.findAllBy();
         allByQuery.forEach(user -> putTask(from(user)));
     }
 
@@ -96,7 +96,7 @@ public class EmbeddedRegistrationManager implements OrderManager {
                 .actionId(REGISTRATION.getId())
                 .entityId(USER.getId())
                 .statusId(NEW.getId())
-                .userId(userInfo.getId())
+                .user(userRepository.getOne(userInfo.getId()))
                 .transitions(Arrays.asList(transition))
                 .build();
         futureOrders.add(newOrder);
@@ -113,7 +113,7 @@ public class EmbeddedRegistrationManager implements OrderManager {
 
     void startOrderAndUpdateUserStatus(UserInfo userInfo) {
         OrderDao order = futureOrders.poll();
-        currentOrders.put(order.getUserId(), order);
+        currentOrders.put(order.getUser().getUserId(), order);
         messageService.send(factory.getVerifyMessage(userInfo));
         UserDao userDao = userRepository.findById(userInfo.getId()).get();
         userDao.setStatus(UserStatusDao.builder().statusId(ACTIVATION.getId()).build());
@@ -122,7 +122,7 @@ public class EmbeddedRegistrationManager implements OrderManager {
 
     @Transactional
     void updateUserOrder(OrderDao order, UserStatusDao userStatus) {
-        UserDao user = userRepository.findById(order.getUserId()).get();
+        UserDao user = userRepository.findById(order.getUser().getUserId()).get();
         user.setStatus(userStatus);
         userRepository.save(user);
         orderRepository.save(order);

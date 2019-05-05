@@ -44,6 +44,9 @@ public class UserDao {
     @JoinColumn(name = "status_id", referencedColumnName = "status_id")
     UserStatusDao status;
 
+    @OneToOne(mappedBy = "user")
+    OrderDao order;
+
     public static UserInfo from(UserDao user){
         return UserInfo.builder()
                 .id(user.getUserId())
